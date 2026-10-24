@@ -1,4 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 const API_BASE = "http://127.0.0.1:8000/api";
 
@@ -91,7 +104,25 @@ function getStatusCounts(records) {
 
   return Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
 }
+function getStatusColor(status) {
+  const value = String(status || "").toUpperCase();
 
+  if (
+    ["PAID", "COMPLETED", "SUCCESS", "SUCCESSFUL", "CONFIRMED", "ACTIVE"].includes(value)
+  ) {
+    return "#17836C";
+  }
+
+  if (["PENDING", "PROCESSING", "INITIATED"].includes(value)) {
+    return "#F59E0B";
+  }
+
+  if (["FAILED", "CANCELLED", "CANCELED", "REFUNDED"].includes(value)) {
+    return "#DC2626";
+  }
+
+  return "#64748B";
+}
 function StatusBadge({ value }) {
   const status = String(value || "UNKNOWN").toUpperCase();
 
@@ -287,6 +318,35 @@ export default function AdminReports() {
       value: formatAmount(successfulPaymentValue),
     },
   ];
+    const orderStatusData = getStatusCounts(filteredOrders).map(
+    ([status, count]) => ({
+      name: status.replace(/_/g, " "),
+      value: count,
+    })
+  );
+
+  const paymentStatusData = getStatusCounts(filteredPayments).map(
+    ([status, count]) => ({
+      name: status.replace(/_/g, " "),
+      value: count,
+    })
+  );
+
+  const financialData = [
+    {
+      name: "Orders",
+      amount: totalOrderValue,
+    },
+    {
+      name: "Invoices",
+      amount: totalInvoiceValue,
+    },
+    {
+      name: "Successful Payments",
+      amount: successfulPaymentValue,
+    },
+  ];
+
 
   function exportCsv() {
     const rows = [
@@ -442,6 +502,146 @@ export default function AdminReports() {
                   </p>
                 </div>
               ))}
+            </section>
+
+            {/* Order and Payment Status Charts */}
+            <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Order Status Doughnut Chart */}
+              <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="pc-title text-xl font-bold">
+                  Order Status
+                </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Distribution of current orders
+                </p>
+
+                {orderStatusData.length === 0 ? (
+                  <p className="mt-6 text-sm text-stone-500">
+                    No order data available.
+                  </p>
+                ) : (
+                  <div className="mt-4 h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={orderStatusData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={3}
+                        >
+                          {orderStatusData.map((entry, index) => (
+                            <Cell
+                              key={`${entry.name}-${index}`}
+                              fill={getStatusColor(entry.name)}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Status Doughnut Chart */}
+              <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+                <h2 className="pc-title text-xl font-bold">
+                  Payment Status
+                </h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Successful, failed and pending payments
+                </p>
+
+                {paymentStatusData.length === 0 ? (
+                  <p className="mt-6 text-sm text-stone-500">
+                    No payment data available.
+                  </p>
+                ) : (
+                  <div className="mt-4 h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={paymentStatusData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={85}
+                          paddingAngle={3}
+                        >
+                        {paymentStatusData.map((entry, index) => (
+                          <Cell
+                            key={`${entry.name}-${index}`}
+                            fill={getStatusColor(entry.name)}
+                         />
+                        ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Financial Overview Bar Chart */}
+            <section className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-6">
+              <h2 className="pc-title text-xl font-bold">
+                Financial Overview
+              </h2>
+              <p className="mt-1 text-sm text-stone-500">
+                Compare order value, invoice value and successful payment
+                amount.
+              </p>
+
+              <div className="mt-5 h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={financialData}
+                    margin={{ top: 10, right: 20, left: 15, bottom: 10 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#E3E7D8"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 12 }}
+                      interval={0}
+                    />
+                    <YAxis
+                      width={75}
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) =>
+                        value >= 1000
+                          ? `₹${(value / 1000).toFixed(0)}k`
+                          : `₹${value}`
+                      }
+                    />
+                    <Tooltip
+                      formatter={(value) => [
+                        formatAmount(value),
+                        "Amount",
+                      ]}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="amount"
+                      name="Amount (₹)"
+                      fill="#17836C"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={70}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </section>
 
             <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">

@@ -40,6 +40,17 @@ function getRelationValue(value) {
 
   return value;
 }
+function customerLabel(job) {
+  return job.customer_name || getRelationValue(job.customer);
+}
+
+function serialLabel(job) {
+  return job.serial_number_text || getRelationValue(job.serial);
+}
+
+function technicianLabel(job) {
+  return job.technician_name || getRelationValue(job.technician);
+}
 
 export default function StaffJobs() {
   const [jobs, setJobs] = useState([]);
@@ -201,30 +212,35 @@ export default function StaffJobs() {
             {loading ? "Loading..." : "Refresh Jobs"}
           </button>
         </div>
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div className="rounded-2xl border border-teal-100 bg-white p-5">
+    <p className="text-sm text-stone-500">Total Jobs</p>
+    <p className="mt-2 text-3xl font-bold text-stone-900">
+      {jobs.length}
+    </p>
+  </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-teal-100 bg-white p-5">
-            <p className="text-sm text-stone-500">Total Jobs</p>
-            <p className="mt-2 text-3xl font-bold text-stone-900">
-              {jobs.length}
-            </p>
-          </div>
+  <div className="rounded-2xl border border-teal-100 bg-white p-5">
+    <p className="text-sm text-stone-500">Pending</p>
+    <p className="mt-2 text-3xl font-bold text-amber-600">
+      {jobs.filter((job) => job.status === "PENDING").length}
+    </p>
+  </div>
 
-          <div className="rounded-2xl border border-teal-100 bg-white p-5">
-            <p className="text-sm text-stone-500">Pending</p>
-            <p className="mt-2 text-3xl font-bold text-amber-600">
-              {jobs.filter((job) => job.status === "PENDING").length}
-            </p>
-          </div>
+  <div className="rounded-2xl border border-teal-100 bg-white p-5">
+    <p className="text-sm text-stone-500">In Progress</p>
+    <p className="mt-2 text-3xl font-bold text-teal-700">
+      {jobs.filter((job) => job.status === "IN_PROGRESS").length}
+    </p>
+  </div>
 
-          <div className="rounded-2xl border border-teal-100 bg-white p-5">
-            <p className="text-sm text-stone-500">Completed</p>
-            <p className="mt-2 text-3xl font-bold text-emerald-700">
-              {jobs.filter((job) => job.status === "COMPLETED").length}
-            </p>
-          </div>
-        </div>
-
+  <div className="rounded-2xl border border-teal-100 bg-white p-5">
+    <p className="text-sm text-stone-500">Completed</p>
+    <p className="mt-2 text-3xl font-bold text-emerald-700">
+      {jobs.filter((job) => job.status === "COMPLETED").length}
+    </p>
+  </div>
+</div>
         <div className="mt-6 rounded-2xl border border-teal-100 bg-white p-4 sm:p-5">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_220px]">
             <input
@@ -302,10 +318,10 @@ export default function StaffJobs() {
 
                     <p className="mt-3 text-sm text-stone-600">
                       <strong>Customer:</strong>{" "}
-                      {getRelationValue(job.customer)}
-                      {" · "}
-                      <strong>Serial:</strong>{" "}
-                      {getRelationValue(job.serial)}
+                        {customerLabel(job)}
+                        {" · "}
+                        <strong>Serial:</strong>{" "}
+                        {serialLabel(job)}
                     </p>
 
                     <p className="mt-2 text-sm text-stone-600">
@@ -365,10 +381,9 @@ export default function StaffJobs() {
             </div>
 
             <div className="mt-5 space-y-4 text-sm text-stone-700">
-              <p><strong>Status:</strong> {getStatusLabel(selectedJob.status)}</p>
-              <p><strong>Customer:</strong> {getRelationValue(selectedJob.customer)}</p>
-              <p><strong>Serial:</strong> {getRelationValue(selectedJob.serial)}</p>
-              <p><strong>Technician:</strong> {getRelationValue(selectedJob.technician)}</p>
+              <p><strong>Customer:</strong> {customerLabel(selectedJob)}</p>
+              <p><strong>Serial:</strong> {serialLabel(selectedJob)}</p>
+              <p><strong>Technician:</strong> {technicianLabel(selectedJob)}</p>
               <p><strong>Problem:</strong> {selectedJob.problem_description || "—"}</p>
               <p className="whitespace-pre-wrap"><strong>Diagnosis:</strong>{"\n"}{selectedJob.diagnosis || "Not added"}</p>
               <p className="whitespace-pre-wrap"><strong>Repair details:</strong>{"\n"}{selectedJob.repair_details || "Not added"}</p>

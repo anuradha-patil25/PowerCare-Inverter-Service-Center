@@ -609,17 +609,6 @@ class ServiceRequestCreateView(APIView):
             status="PENDING",
         )
 
-        CustomerNotification.objects.get_or_create(
-            customer=customer,
-            title=f"Service request #{job.job_id} submitted",
-            defaults={
-                "message": (
-                    f"Your service request #{job.job_id} has been submitted. "
-                    f"Current status: {job.status}."
-                ),
-                "notification_type": "SERVICE_UPDATE",
-            },
-        )
 
         return Response(
             {
@@ -645,7 +634,7 @@ class MyServiceRequestsView(APIView):
 
     def get(self, request):
         customer = Customer.objects.filter(
-            user=request.user
+            user=request.users
         ).first()
 
         if customer is None:

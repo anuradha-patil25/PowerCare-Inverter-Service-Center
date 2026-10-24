@@ -1,6 +1,10 @@
-
-import { NavLink, Outlet, Navigate, useNavigate } from "react-router-dom";
-
+import {
+  NavLink,
+  Outlet,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 const menuItems = [
   { label: "Dashboard", path: "/admin/dashboard", icon: "▦" },
   { label: "Customers", path: "/admin/customers", icon: "♙" },
@@ -29,6 +33,7 @@ const menuItems = [
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   let user = {};
 
@@ -57,11 +62,10 @@ export default function AdminLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("current_user");
-    navigate("/login", { replace: true });
+    function logout() {
+    navigate("/logout", {
+      state: { from: location.pathname },
+    });
   }
 
   return (

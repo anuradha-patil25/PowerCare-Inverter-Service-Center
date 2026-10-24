@@ -354,15 +354,39 @@ class CustomerRegistrationSerializer(serializers.Serializer):
 # =========================================================
 # JOB
 # =========================================================
-
 class JobSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
+    serial_number_text = serializers.SerializerMethodField()
+    technician_name = serializers.SerializerMethodField()
+
+    def get_customer_name(self, obj):
+        customer = obj.customer
+
+        if customer is None and obj.serial:
+            customer = obj.serial.customer
+
+        return customer.customer_name if customer else None
+
+    def get_serial_number_text(self, obj):
+        if obj.serial:
+            return obj.serial.serial_number
+        return None
+
+    def get_technician_name(self, obj):
+        if obj.technician:
+            return obj.technician.technician_name
+        return None
+
     class Meta:
         model = Job
         fields = [
             "job_id",
             "customer",
+            "customer_name",
             "serial",
+            "serial_number_text",
             "technician",
+            "technician_name",
             "service_date",
             "problem_description",
             "diagnosis",

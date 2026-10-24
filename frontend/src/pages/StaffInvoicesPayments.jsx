@@ -58,6 +58,27 @@ function StaffInvoicesPayments() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showCreateInvoice, setShowCreateInvoice] = useState(false);
+const [creatingInvoice, setCreatingInvoice] = useState(false);
+const [createError, setCreateError] = useState("");
+const [createSuccess, setCreateSuccess] = useState("");
+
+const getTodayLocalDate = () => {
+  const today = new Date();
+
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+};
+
+const [invoiceForm, setInvoiceForm] = useState({
+  job: "",
+  invoice_date: getTodayLocalDate(),
+  amount: "",
+  tax_amount: "",
+});
+
+const invoiceFormTotal =
+  (Number(invoiceForm.amount) || 0) +
+  (Number(invoiceForm.tax_amount) || 0);
 
   const loadRecords = async () => {
     setLoading(true);
@@ -108,7 +129,101 @@ function StaffInvoicesPayments() {
       setLoading(false);
     }
   };
+const createInvoice = async (event) => {
+  event.preventDefault();
+  setCreateError("");
+  setCreateSuccess("");
 
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    setCreateError("Please log in again.");
+    return;
+  }
+
+  const jobId = Number(invoiceForm.job);
+  const amount = Number(invoiceForm.amount);
+  const tax = Number(invoiceForm.tax_amount);
+
+  if (!Number.isInteger(jobId) || jobId <= 0) {
+    setCreateError("Enter a valid Job ID.");
+    return;
+  }
+
+  if (invoices.some((invoice) => String(invoice.job) === String(jobId))) {
+    setCreateError("This Job already has an invoice. Please enter another Job ID.");
+    return;
+  }
+
+  if (
+    invoiceForm.amount.trim() === "" ||
+    invoiceForm.tax_amount.trim() === "" ||
+    !Number.isFinite(amount) ||
+    !Number.isFinite(tax) ||
+    amount < 0 ||
+    tax < 0
+  ) {
+    setCreateError("Enter valid, non-negative amount and tax values.");
+    return;
+  }
+
+  setCreatingInvoice(true);
+
+  try {
+    const response = await fetch(`${API_BASE}/invoices/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        job: jobId,
+        invoice_date: invoiceForm.invoice_date,
+        amount: amount.toFixed(2),
+        tax_amount: tax.toFixed(2),
+        total_amount: (amount + tax).toFixed(2),
+        payment_status: "UNPAID",
+        payment_method: null,
+        status: "ACTIVE",
+      }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const message =
+        result.detail ||
+        result.job?.[0] ||
+        result.non_field_errors?.[0] ||
+        Object.entries(result)
+          .map(([field, value]) =>
+            `${field}: ${Array.isArray(value) ? value.join(", ") : String(value)}`
+          )
+          .join(" | ") ||
+        `Could not create invoice (${response.status}).`;
+
+      throw new Error(message);
+    }
+
+    setShowCreateInvoice(false);
+    setInvoiceForm({
+      job: "",
+      invoice_date: getTodayLocalDate(),
+      amount: "",
+      tax_amount: "",
+    });
+
+    setCreateSuccess(
+      `Invoice${result.invoice_id ? ` #${result.invoice_id}` : ""} created successfully. Payment status: UNPAID.`
+    );
+
+    await loadRecords();
+  } catch (err) {
+    setCreateError(err.message || "Unable to create invoice.");
+  } finally {
+    setCreatingInvoice(false);
+  }
+};
   useEffect(() => {
     loadRecords();
   }, []);
@@ -213,15 +328,36 @@ function StaffInvoicesPayments() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={loadRecords}
-            disabled={loading}
-            className="rounded-xl bg-[#075653] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#064744] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Refreshing..." : "Refresh Records"}
-          </button>
+          <div className="flex flex-wrap gap-3">
+  {tab === "invoices" && (
+    <button
+      type="button"
+      onClick={() => {
+        setShowCreateInvoice(!showCreateInvoice);
+        setCreateError("");
+        setCreateSuccess("");
+      }}
+className="rounded-xl border border-teal-200 bg-white px-4 py-3 text-sm font-semibold text-teal-800 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50"    >
+      {showCreateInvoice ? "Close Invoice Form" : "+ Create Invoice"}
+    </button>
+  )}
+
+  <button
+    type="button"
+    onClick={loadRecords}
+    disabled={loading}
+    className="rounded-xl bg-[#075653] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#064744] disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    {loading ? "Refreshing..." : "Refresh Records"}
+  </button>
+</div>
         </header>
+
+        {createSuccess && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+            {createSuccess}
+          </div>
+        )}
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
@@ -268,7 +404,124 @@ function StaffInvoicesPayments() {
               Payments ({payments.length})
             </button>
           </div>
+          {tab === "invoices" && showCreateInvoice && (
+  <form
+    onSubmit={createInvoice}
+    className="m-4 space-y-4 rounded-2xl border border-teal-200 bg-[#F8FCFB] p-5"
+  >
+    <div>
+      <h2 className="text-lg font-bold text-slate-900">
+        Create Service Invoice
+      </h2>
+      <p className="mt-1 text-sm text-slate-600">
+        Enter a Job ID that does not already have an invoice.
+        This creates an unpaid invoice only; it does not collect payment.
+      </p>
+    </div>
 
+    {createError && (
+      <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        {createError}
+      </div>
+    )}
+
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <label className="text-sm font-medium text-slate-700">
+        Job ID
+        <input
+          type="number"
+          min="1"
+          required
+          value={invoiceForm.job}
+          onChange={(event) =>
+            setInvoiceForm({ ...invoiceForm, job: event.target.value })
+          }
+          placeholder="e.g. 22"
+          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 outline-none focus:border-teal-700"
+        />
+      </label>
+
+      <label className="text-sm font-medium text-slate-700">
+        Invoice Date
+        <input
+          type="date"
+          required
+          value={invoiceForm.invoice_date}
+          onChange={(event) =>
+            setInvoiceForm({
+              ...invoiceForm,
+              invoice_date: event.target.value,
+            })
+          }
+          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 outline-none focus:border-teal-700"
+        />
+      </label>
+
+      <label className="text-sm font-medium text-slate-700">
+        Amount (₹)
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          required
+          value={invoiceForm.amount}
+          onChange={(event) =>
+            setInvoiceForm({ ...invoiceForm, amount: event.target.value })
+          }
+          placeholder="2000.00"
+          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 outline-none focus:border-teal-700"
+        />
+      </label>
+
+      <label className="text-sm font-medium text-slate-700">
+        Tax Amount (₹)
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          required
+          value={invoiceForm.tax_amount}
+          onChange={(event) =>
+            setInvoiceForm({
+              ...invoiceForm,
+              tax_amount: event.target.value,
+            })
+          }
+          placeholder="360.00"
+          className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 outline-none focus:border-teal-700"
+        />
+      </label>
+    </div>
+
+    <div className="rounded-xl bg-white p-4">
+      <p className="text-sm text-slate-500">Invoice Total</p>
+      <p className="mt-1 text-2xl font-bold text-[#075653]">
+        {formatMoney(invoiceFormTotal)}
+      </p>
+    </div>
+
+    <div className="flex flex-wrap gap-3">
+      <button
+        type="submit"
+        disabled={creatingInvoice}
+        className="rounded-xl bg-[#075653] px-5 py-3 text-sm font-semibold text-white hover:bg-[#064744] disabled:opacity-60"
+      >
+        {creatingInvoice ? "Creating..." : "Create Invoice"}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowCreateInvoice(false);
+          setCreateError("");
+        }}
+        className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+)}
           <div className="flex flex-col gap-3 p-4 sm:flex-row">
             <input
               type="search"

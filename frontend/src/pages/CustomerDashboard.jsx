@@ -420,11 +420,10 @@ function CustomerDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("current_user");
-    navigate("/login");
-  };
+  navigate("/logout", {
+    state: { from: "/customer/dashboard" },
+  });
+};
 
   const navigateSection = (section) => {
     setActiveSection(section);

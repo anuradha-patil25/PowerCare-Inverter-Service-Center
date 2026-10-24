@@ -340,7 +340,26 @@ export default function AdminWarranties() {
 
     return !existing || Number(existing.warranty_id) === Number(editingId);
   });
+  useEffect(() => {
+  console.log("Serial Numbers:", serialNumbers);
 
+  console.log(
+    "Warranty details:",
+    warranties.map((item) => ({
+      warranty_id: item.warranty_id,
+      serial: item.serial,
+      serial_id: serialId(item.serial),
+    }))
+  );
+
+  console.log(
+    "Available Serial Numbers:",
+    availableSerials.map((serial) => ({
+      serial_id: serial.serial_id,
+      serial_number: serial.serial_number,
+    }))
+  );
+}, [serialNumbers, warranties, availableSerials]);
   return (
     <div className="min-h-screen bg-[#F7F7F0] p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -618,7 +637,6 @@ export default function AdminWarranties() {
                   value={form.serial}
                   onChange={changeForm}
                   required
-                  disabled={Boolean(editingId)}
                   className="w-full rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 disabled:bg-stone-100"
                 >
                   <option value="">Select Serial Number</option>

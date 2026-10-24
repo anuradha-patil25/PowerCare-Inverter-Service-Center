@@ -18,6 +18,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import LogoutConfirmation from "./pages/LogoutConfirmation";
 import CustomerDashboard from "./pages/CustomerDashboard";
 
 import StaffDashboard from "./pages/StaffDashboard";
@@ -100,7 +101,11 @@ function App() {
         {/* Login and Registration */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        {/* Common Logout Confirmation Page */}
+       <Route
+           path="/logout"
+           element={<LogoutConfirmation />}
+      />
         {/* Staff Workspace */}
         <Route element={<StaffLayout />}>
           <Route

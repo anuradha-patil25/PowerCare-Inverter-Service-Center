@@ -1,6 +1,9 @@
-
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 const menuItems = [
   {
     label: "Dashboard",
@@ -41,13 +44,12 @@ const menuItems = [
 
 export default function StaffLayout() {
   const navigate = useNavigate();
-
-  function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("current_user");
-    navigate("/login");
-  }
+  const location = useLocation();
+function logout() {
+  navigate("/logout", {
+    state: { from: location.pathname },
+  });
+}
 
   const navLinkClass = ({ isActive }) =>
     `flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
