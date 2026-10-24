@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API_BASE = "http://127.0.0.1:8000/api";
-const MEDIA_BASE = "http://127.0.0.1:8000";
+const API_BASE = "/api";
+const MEDIA_BASE = "";
 
 const getHealth = (report) =>
   String(

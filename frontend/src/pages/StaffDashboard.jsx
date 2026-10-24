@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const PAGE_SIZE = 5;
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "/api";
 
 function StaffDashboard() {
   const [jobs, setJobs] = useState([]);

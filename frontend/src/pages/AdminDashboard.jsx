@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "/api";
 
 const managementItems = [
   { title: "Customers", description: "View and search registered customers.", path: "/admin/customers", icon: "👥", colors: "from-emerald-500 to-teal-700", soft: "bg-emerald-50" },

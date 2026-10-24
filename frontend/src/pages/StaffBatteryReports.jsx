@@ -1,8 +1,8 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE = "http://127.0.0.1:8000/api";
-const SERVER_BASE = "http://127.0.0.1:8000";
+const API_BASE = "/api";
+const SERVER_BASE = "";
 
 const HEALTH_OPTIONS = [
   { value: "GOOD", label: "Good" },

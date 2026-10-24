@@ -1,9 +1,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const SERIALS_API = "http://127.0.0.1:8000/api/serial-numbers/";
-const PRODUCTS_API = "http://127.0.0.1:8000/api/products/";
-const CUSTOMERS_API = "http://127.0.0.1:8000/api/customers/";
+const SERIALS_API = "/api/serial-numbers/";
+const PRODUCTS_API = "/api/products/";
+const CUSTOMERS_API = "/api/customers/";
 
 const EMPTY_FORM = {
   serial_number: "",

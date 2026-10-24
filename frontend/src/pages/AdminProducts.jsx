@@ -1,8 +1,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const API_URL = "http://127.0.0.1:8000/api/products/";
-const MEDIA_BASE = "http://127.0.0.1:8000";
+const API_URL = "/api/products/";
+const MEDIA_BASE = "";
 
 const EMPTY_FORM = {
   product_name: "",

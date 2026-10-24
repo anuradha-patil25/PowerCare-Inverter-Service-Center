@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const API = "http://127.0.0.1:8000/api";
+const API = "/api";
 const PAGE_SIZE = 5;
 
 const EMPTY_FORM = {

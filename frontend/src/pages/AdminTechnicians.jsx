@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const API_URL = "http://127.0.0.1:8000/api/technicians/";
+const API_URL = "/api/technicians/";
 
 const EMPTY_FORM = {
   technician_name: "",

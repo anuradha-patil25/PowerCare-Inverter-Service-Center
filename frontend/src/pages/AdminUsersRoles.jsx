@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const API_BASE = "http://127.0.0.1:8000/api/admin/users-roles/";
+const API_BASE = "/api/admin/users-roles/";
 
 export default function AdminUsersRoles() {
   const [users, setUsers] = useState([]);

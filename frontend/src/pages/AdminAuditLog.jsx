@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API_URL = "http://127.0.0.1:8000/api/admin/audit-log/";
+const API_URL = "/api/admin/audit-log/";
 
 function getLogs(data) {
   if (Array.isArray(data)) return data;

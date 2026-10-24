@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const API_URL = "http://127.0.0.1:8000/api/admin/notifications/";
+const API_URL = "/api/admin/notifications/";
 
 function formatDate(value) {
   if (!value) return "—";
