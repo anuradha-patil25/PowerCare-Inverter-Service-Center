@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import getProductImageUrl from "../utils/productImageUrl";
 
 const getProductType = (product) =>
   String(product?.product_type || "").toUpperCase();
@@ -134,7 +135,7 @@ function Home() {
   };
 
   const renderProductImage = (product, className = "") => {
-    const imageUrl = getImageUrl(product.image);
+    const imageUrl = getProductImageUrl(product.image);
     const failed = imageErrors[product.product_id];
 
     if (!imageUrl || failed) {

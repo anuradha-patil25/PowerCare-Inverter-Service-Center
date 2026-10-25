@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import getProductImageUrl from "../utils/productImageUrl";
 
 const getProductType = (product) =>
   String(product?.product_type || "").toUpperCase();
@@ -360,7 +361,7 @@ function Products() {
           /* PRODUCT CARDS */
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => {
-              const imageUrl = getImageUrl(product.image);
+              const imageUrl = getProductImageUrl(product.image);
               const imageFailed = imageErrors[product.product_id];
               const inStock = Number(product.stock_quantity) > 0;
 
